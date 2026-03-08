@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html ng-app="ftpClientApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FTP Client</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+</head>
+<body ng-controller="MainController">
+  <div class="app-container">
+    <div ng-show="!isConnected" class="login-container">
+      <div class="login-box">
+        <h2>FTP Connection</h2>
+        <form ng-submit="connect()">
+          <div class="form-group">
+            <label>Host/IP</label>
+            <input type="text" ng-model="credentials.host" required>
+          </div>
+          <div class="form-group">
+            <label>Port</label>
+            <input type="number" ng-model="credentials.port" value="21" required>
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" ng-model="credentials.user" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" ng-model="credentials.password" required>
+          </div>
+          <button type="submit" class="btn-primary">Connect</button>
+          <div ng-show="error" class="error-message">{{error}}</div>
+        </form>
+      </div>
+    </div>
+
+    <div ng-show="isConnected" class="file-manager">
+      <div class="toolbar">
+        <button ng-click="goBack()" ng-disabled="!canGoBack()" title="Back (Alt + ,)">
+          <span class="iconify" data-icon="mdi:arrow-left"></span> Back
+        </button>
+        <button ng-click="goForward()" ng-disabled="!canGoForward()" title="Forward (Alt + .)">
+          <span class="iconify" data-icon="mdi:arrow-right"></span> Forward
+        </button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" ng-click="navigateTo('/')">WebFTP</span>
+          <span ng-repeat="part in pathParts track by $index">
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-item" ng-click="navigateToIndex($index)">{{part}}</span>
+          </span>
+        </div>
+        <button ng-click="uploadFile()" title="Upload File">
+          <span class="iconify" data-icon="mdi:upload"></span> Upload
+        </button>
+        <button ng-click="createDirectory()" title="New Directory">
+          <span class="iconify" data-icon="mdi:folder-plus"></span> New Folder
+        </button>
+        <button ng-click="toggleHiddenFiles()" title="Toggle Hidden Files">
+          <span class="iconify" data-icon="{{showHiddenFiles ? 'mdi:eye-off' : 'mdi:eye'}}"></span>
+        </button>
+        <button ng-click="disconnect()" class="btn-disconnect">
+          <span class="iconify" data-icon="mdi:logout"></span> Disconnect
+        </button>
+      </div>
+
+      <div class="content-area">
+        <input type="file" id="fileUpload" style="display: none;" onchange="angular.element(this).scope().handleFileSelect(this.files)">
+        <div class="file-view">
+          <div class="file-grid">
+            <div class="file-item" ng-repeat="item in allItems" ng-click="handleClick(item)" ng-class="{'selected': selectedFile === item}">
+              <div class="file-icon">
+                <span class="iconify" data-icon="{{getFileIcon(item)}}" style="font-size: 48px;"></span>
+              </div>
+              <div class="file-name">{{item.name}}</div>
+              <div class="file-size" ng-if="item.type === 'file'">{{formatSize(item.size)}}</div>
+              <div class="file-actions" ng-if="item.type === 'file'">
+                <button ng-click="downloadFile(item); $event.stopPropagation()" title="Download">
+                  <span class="iconify" data-icon="mdi:download"></span>
+                </button>
+                <button ng-click="renameFile(item); $event.stopPropagation()" title="Rename">
+                  <span class="iconify" data-icon="mdi:pencil"></span>
+                </button>
+                <button ng-click="deleteFile(item); $event.stopPropagation()" title="Delete">
+                  <span class="iconify" data-icon="mdi:delete"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="services/ftpService.js"></script>
+  <script src="js/controllers.js"></script>
+</body>
+</html>
