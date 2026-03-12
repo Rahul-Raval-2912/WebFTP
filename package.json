@@ -2,11 +2,15 @@
   "name": "web-ftp-client",
   "version": "1.0.0",
   "description": "Web-based FTP client with file manager interface",
-  "main": "server/server.js",
+  "type": "module",
+  "main": "server/server.ts",
   "scripts": {
-    "start": "node server/server.js",
-    "frontend": "node server/frontend-server.js",
-    "dev": "nodemon server/server.js"
+    "build:frontend": "tsc -p tsconfig.frontend.json",
+    "start": "tsx server/server.ts",
+    "frontend": "tsx server/frontend-server.ts",
+    "dev": "nodemon --exec tsx server/server.ts",
+    "dev:frontend": "nodemon --exec tsx server/frontend-server.ts",
+    "watch:frontend": "tsc -p tsconfig.frontend.json --watch"
   },
   "dependencies": {
     "basic-ftp": "^5.0.3",
@@ -16,6 +20,13 @@
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.11.0",
+    "nodemon": "^3.0.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
   }
 }

@@ -12,6 +12,8 @@ body {
   overflow: hidden;
   font-size: 14px;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app-container {
@@ -36,7 +38,7 @@ body {
   padding: var(--spacing-xl);
   border: 3px solid var(--border-color);
   box-shadow: var(--shadow-lg);
-  min-width: 400px;
+  width: 400px;
 }
 
 .login-box h2 {
@@ -132,6 +134,8 @@ body {
   align-items: center;
   gap: var(--spacing-md);
   border-bottom: 3px solid var(--border-color);
+  flex-wrap: wrap;
+  overflow-x: auto;
 }
 
 .toolbar button {
@@ -149,6 +153,8 @@ body {
   text-transform: uppercase;
   transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .toolbar button:hover:not(:disabled) {
@@ -175,6 +181,8 @@ body {
   color: var(--text-secondary);
   overflow-x: auto;
   font-family: 'Courier New', monospace;
+  min-width: 0;
+  scrollbar-width: thin;
 }
 
 .breadcrumb-item {
@@ -225,6 +233,225 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+
+  .login-box {
+    width: 90vw;
+    max-width: 500px;
+    padding: var(--spacing-lg);
+    border-width: 2px;
+  }
+
+  .login-box h2 {
+    font-size: 18px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-group input {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .btn-primary {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .toolbar {
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .toolbar button {
+    padding: 6px 12px;
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .toolbar button span {
+    font-size: 16px;
+  }
+
+  .breadcrumb {
+    width: 100%;
+    order: 10;
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .breadcrumb-item {
+    font-size: 12px;
+  }
+
+  .file-view {
+    padding: var(--spacing-md);
+  }
+
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .file-item {
+    padding: var(--spacing-sm);
+  }
+
+  .file-icon {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .file-icon span {
+    font-size: 40px !important;
+  }
+
+  .file-name {
+    font-size: 11px;
+  }
+
+  .file-size {
+    font-size: 10px;
+  }
+
+  .file-actions button {
+    padding: 5px;
+  }
+
+  .file-actions button span {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+
+  .login-box {
+    width: 95vw;
+    padding: var(--spacing-md);
+  }
+
+  .login-box h2 {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .form-group label {
+    font-size: 11px;
+  }
+
+  .form-group input {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .btn-primary {
+    padding: 10px;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .toolbar {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .toolbar button {
+    padding: 5px 10px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .toolbar button span:not(.iconify) {
+    display: none;
+  }
+
+  .breadcrumb-item {
+    font-size: 11px;
+  }
+
+  .file-view {
+    padding: var(--spacing-sm);
+  }
+
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--spacing-sm);
+  }
+
+  .file-item {
+    padding: var(--spacing-xs);
+  }
+
+  .file-icon span {
+    font-size: 36px !important;
+  }
+
+  .file-name {
+    font-size: 10px;
+  }
+
+  .file-size {
+    font-size: 9px;
+  }
+
+  .file-actions {
+    gap: 4px;
+  }
+
+  .file-actions button {
+    padding: 4px;
+  }
+
+  .file-actions button span {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+
+  .toolbar button {
+    padding: 4px 8px;
+  }
+
+  .file-icon span {
+    font-size: 32px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .login-container {
+    padding: var(--spacing-md) 0;
+  }
+
+  .login-box {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .login-box h2 {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-sm);
+  }
 }
 
 .file-item {
@@ -321,4 +548,53 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .toolbar button,
+  .file-item,
+  .file-actions button,
+  .breadcrumb-item {
+    -webkit-tap-highlight-color: rgba(91, 155, 213, 0.3);
+    tap-highlight-color: rgba(91, 155, 213, 0.3);
+  }
+
+  .toolbar button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .file-actions button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  .file-item {
+    touch-action: manipulation;
+  }
+
+  input,
+  button {
+    touch-action: manipulation;
+  }
+}
+
+/* Prevent text selection on double-tap */
+.toolbar button,
+.file-item,
+.breadcrumb-item {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs */
+input,
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }

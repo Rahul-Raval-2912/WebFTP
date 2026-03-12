@@ -1,16 +1,18 @@
-angular.module('ftpClientApp').service('FtpService', ['$http', '$q', function($http, $q) {
+/// <reference path="../types.ts" />
+
+angular.module('ftpClientApp').service('FtpService', ['$http', '$q', function($http: any, $q: any) {
   const API_URL = 'http://localhost:3000/api';
-  const cache = new Map();
+  const cache = new Map<string, any>();
 
   this.checkStatus = function() {
     return $http.get(`${API_URL}/status`, { withCredentials: true });
   };
 
-  this.connect = function(credentials) {
+  this.connect = function(credentials: FTPCredentials) {
     return $http.post(`${API_URL}/connect`, credentials, { withCredentials: true });
   };
 
-  this.listFiles = function(path) {
+  this.listFiles = function(path: string) {
     return $http.get(`${API_URL}/list`, { 
       params: { path },
       withCredentials: true,
@@ -18,23 +20,23 @@ angular.module('ftpClientApp').service('FtpService', ['$http', '$q', function($h
     });
   };
 
-  this.downloadFile = function(path) {
+  this.downloadFile = function(path: string) {
     window.open(`${API_URL}/download?path=${encodeURIComponent(path)}`, '_blank');
   };
 
-  this.renameFile = function(oldPath, newPath) {
+  this.renameFile = function(oldPath: string, newPath: string) {
     return $http.post(`${API_URL}/rename`, { oldPath, newPath }, { withCredentials: true });
   };
 
-  this.deleteFile = function(path, type) {
+  this.deleteFile = function(path: string, type: string) {
     return $http.post(`${API_URL}/delete`, { path, type }, { withCredentials: true });
   };
 
-  this.moveFile = function(sourcePath, destPath) {
+  this.moveFile = function(sourcePath: string, destPath: string) {
     return $http.post(`${API_URL}/move`, { sourcePath, destPath }, { withCredentials: true });
   };
 
-  this.uploadFile = function(dirPath, file) {
+  this.uploadFile = function(dirPath: string, file: File) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('path', dirPath);
@@ -46,11 +48,11 @@ angular.module('ftpClientApp').service('FtpService', ['$http', '$q', function($h
     });
   };
 
-  this.createDirectory = function(dirPath, name) {
+  this.createDirectory = function(dirPath: string, name: string) {
     return $http.post(`${API_URL}/mkdir`, { path: dirPath, name }, { withCredentials: true });
   };
 
-  this.getThumbnail = function(path) {
+  this.getThumbnail = function(path: string) {
     if (cache.has(path)) {
       return $q.resolve(cache.get(path));
     }
@@ -60,7 +62,7 @@ angular.module('ftpClientApp').service('FtpService', ['$http', '$q', function($h
       withCredentials: true,
       responseType: 'arraybuffer',
       timeout: 15000
-    }).then(function(response) {
+    }).then(function(response: any) {
       cache.set(path, response);
       return response;
     });

@@ -1,4 +1,6 @@
-angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpService', function ($scope, FtpService) {
+/// <reference path="../types.ts" />
+
+angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpService', function ($scope: Scope, FtpService: any) {
   $scope.isConnected = false;
   $scope.credentials = { port: 21 };
   $scope.currentPath = '/';
@@ -6,11 +8,10 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
   $scope.selectedFile = null;
   $scope.error = null;
   $scope.showHiddenFiles = false;
-  let navigationHistory = [];
+  let navigationHistory: string[] = [];
   let historyIndex = -1;
 
-  // Check session status on load
-  FtpService.checkStatus().then(function (response) {
+  FtpService.checkStatus().then(function (response: any) {
     if (response.data.connected) {
       $scope.isConnected = true;
       $scope.credentials = response.data.credentials;
@@ -20,7 +21,7 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
     $scope.isConnected = false;
   });
 
-  document.addEventListener('keydown', function (e) {
+  document.addEventListener('keydown', function (e: KeyboardEvent) {
     if (!$scope.isConnected) return;
 
     if (e.altKey && e.key === 'ArrowLeft') {
@@ -38,18 +39,18 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
 
   $scope.connect = function () {
     $scope.error = null;
-    FtpService.connect($scope.credentials).then(function (response) {
+    FtpService.connect($scope.credentials).then(function (response: any) {
       if (response.data.success) {
         $scope.isConnected = true;
         $scope.loadFiles('/');
       }
-    }).catch(function (error) {
+    }).catch(function (error: any) {
       $scope.error = error.data?.message || 'Connection failed';
     });
   };
 
-  $scope.loadFiles = function (path, skipHistory) {
-    FtpService.listFiles(path).then(function (response) {
+  $scope.loadFiles = function (path: string, skipHistory?: boolean) {
+    FtpService.listFiles(path).then(function (response: any) {
       if (response.data.success) {
         $scope.currentPath = path;
         $scope.updateBreadcrumb();
@@ -60,17 +61,17 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
           historyIndex = navigationHistory.length - 1;
         }
 
-        let directories = response.data.files.filter(f => f.type === 'directory');
-        let files = response.data.files.filter(f => f.type === 'file');
+        let directories = response.data.files.filter((f: FileItem) => f.type === 'directory');
+        let files = response.data.files.filter((f: FileItem) => f.type === 'file');
         
         if (!$scope.showHiddenFiles) {
-          directories = directories.filter(f => !f.name.startsWith('.'));
-          files = files.filter(f => !f.name.startsWith('.'));
+          directories = directories.filter((f: FileItem) => !f.name.startsWith('.'));
+          files = files.filter((f: FileItem) => !f.name.startsWith('.'));
         }
         
         $scope.allItems = [...directories, ...files];
       }
-    }).catch(function (error) {
+    }).catch(function (error: any) {
       console.error('Failed to load files:', error);
       $scope.error = 'Failed to load directory';
     });
@@ -106,17 +107,17 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
     }
   };
 
-  $scope.navigateTo = function (path) {
+  $scope.navigateTo = function (path: string) {
     $scope.loadFiles(path);
   };
 
-  $scope.navigateToIndex = function (index) {
+  $scope.navigateToIndex = function (index: number) {
     const parts = $scope.pathParts.slice(0, index + 1);
     const path = '/' + parts.join('/');
     $scope.loadFiles(path);
   };
 
-  $scope.handleClick = function (item) {
+  $scope.handleClick = function (item: FileItem) {
     if (item.type === 'directory') {
       $scope.loadFiles(item.path);
     } else {
@@ -124,49 +125,50 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
     }
   };
 
-  $scope.selectFile = function (file) {
+  $scope.selectFile = function (file: FileItem) {
     $scope.selectedFile = file;
   };
 
-  $scope.downloadFile = function (file) {
+  $scope.downloadFile = function (file: FileItem) {
     FtpService.downloadFile(file.path);
   };
 
-  $scope.renameFile = function (file) {
+  $scope.renameFile = function (file: FileItem) {
     const newName = prompt('Enter new name:', file.name);
     if (newName && newName !== file.name) {
       const newPath = file.path.replace(file.name, newName);
       FtpService.renameFile(file.path, newPath).then(function () {
         $scope.loadFiles($scope.currentPath);
-      }).catch(function (error) {
+      }).catch(function (error: any) {
         alert('Rename failed: ' + (error.data?.message || 'Unknown error'));
       });
     }
   };
 
-  $scope.deleteFile = function (file) {
+  $scope.deleteFile = function (file: FileItem) {
     if (confirm('Delete ' + file.name + '?')) {
       FtpService.deleteFile(file.path, file.type).then(function () {
         $scope.loadFiles($scope.currentPath);
-      }).catch(function (error) {
+      }).catch(function (error: any) {
         alert('Delete failed: ' + (error.data?.message || 'Unknown error'));
       });
     }
   };
 
   $scope.uploadFile = function () {
-    document.getElementById('fileUpload').click();
+    document.getElementById('fileUpload')?.click();
   };
 
-  $scope.handleFileSelect = function (files) {
+  $scope.handleFileSelect = function (files: FileList) {
     if (files.length > 0) {
       const file = files[0];
-      FtpService.uploadFile($scope.currentPath, file).then(function (response) {
+      FtpService.uploadFile($scope.currentPath, file).then(function (response: any) {
         if (response.data.success) {
           $scope.loadFiles($scope.currentPath, true);
-          document.getElementById('fileUpload').value = '';
+          const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
+          if (fileInput) fileInput.value = '';
         }
-      }).catch(function (error) {
+      }).catch(function (error: any) {
         alert('Upload failed: ' + (error.data?.message || 'Unknown error'));
       });
     }
@@ -175,11 +177,11 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
   $scope.createDirectory = function () {
     const dirName = prompt('Enter directory name:');
     if (dirName) {
-      FtpService.createDirectory($scope.currentPath, dirName).then(function (response) {
+      FtpService.createDirectory($scope.currentPath, dirName).then(function (response: any) {
         if (response.data.success) {
           $scope.loadFiles($scope.currentPath, true);
         }
-      }).catch(function (error) {
+      }).catch(function (error: any) {
         alert('Create directory failed: ' + (error.data?.message || 'Unknown error'));
       });
     }
@@ -198,7 +200,7 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
     });
   };
 
-  $scope.getFolderIcon = function (name) {
+  $scope.getFolderIcon = function (name: string) {
     const lowerName = name.toLowerCase();
     if (lowerName.includes('download')) return 'mdi:folder-download';
     if (lowerName.includes('document')) return 'mdi:folder-text';
@@ -210,11 +212,11 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
     return 'mdi:folder';
   };
 
-  $scope.getFileIcon = function (file) {
+  $scope.getFileIcon = function (file: FileItem) {
     if (file.type === 'directory') return $scope.getFolderIcon(file.name);
 
-    const ext = file.name.split('.').pop().toLowerCase();
-    const iconMap = {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const iconMap: Record<string, string> = {
       'c': 'mdi:language-c',
       'cpp': 'mdi:language-cpp',
       'java': 'mdi:language-java',
@@ -267,7 +269,7 @@ angular.module('ftpClientApp').controller('MainController', ['$scope', 'FtpServi
     return iconMap[ext] || 'mdi:file-outline';
   };
 
-  $scope.formatSize = function (bytes) {
+  $scope.formatSize = function (bytes: number) {
     if (!bytes) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];

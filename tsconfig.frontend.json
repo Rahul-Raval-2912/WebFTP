@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "none",
+    "lib": ["ES2015", "DOM"],
+    "outDir": "./src/js-compiled",
+    "rootDir": "./src",
+    "strict": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "noEmit": false,
+    "removeComments": true
+  },
+  "include": [
+    "src/js/**/*.ts",
+    "src/services/**/*.ts"
+  ],
+  "exclude": ["node_modules", "src/app"]
+}

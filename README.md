@@ -29,6 +29,8 @@ This application is ideal for developers, system administrators, and users who w
 - Create directories
 - Rename files and folders
 - Responsive user interface
+- **Mobile-responsive design** (phones, tablets, desktop)
+- **Touch-optimized controls** for mobile devices
 - Lightweight and fast performance
 - Simple and intuitive navigation (KeyBindings)
 
@@ -36,7 +38,8 @@ This application is ideal for developers, system administrators, and users who w
 
 1. Clone Repo
 2. `npm install`
-3. Running the Application
+3. `npm run build:frontend`
+4. Running the Application
 
 #### Terminal 1 - Backend Server (FTP API)
 ```bash
@@ -46,6 +49,6 @@ This starts the FTP backend server on http://localhost:3000
 
 #### Terminal 2 - Frontend Server
 ```bash
-node server/frontend-server.js
+npm run frontend
 ```
 This starts the frontend on http://localhost:8080

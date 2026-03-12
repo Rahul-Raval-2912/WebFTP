@@ -1,13 +1,32 @@
-const express = require('express');
-const cors = require('cors');
-const session = require('express-session');
-const multer = require('multer');
-const { Client } = require('basic-ftp');
-const path = require('path');
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import session from 'express-session';
+import multer from 'multer';
+import { Client } from 'basic-ftp';
+import path from 'path';
+import { Readable } from 'stream';
 
 const app = express();
 const PORT = 3000;
 const upload = multer({ storage: multer.memoryStorage() });
+
+interface FTPCredentials {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+}
+
+interface FTPData {
+  client: Client;
+  credentials: FTPCredentials;
+}
+
+declare module 'express-session' {
+  interface SessionData {
+    ftpConnected?: boolean;
+  }
+}
 
 app.use(cors({ origin: 'http://localhost:8080', credentials: true }));
 app.use(express.json());
@@ -18,9 +37,9 @@ app.use(session({
   cookie: { secure: false, maxAge: 3600000 }
 }));
 
-const ftpClients = new Map();
+const ftpClients = new Map<string, FTPData>();
 
-app.get('/api/status', async (req, res) => {
+app.get('/api/status', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -31,7 +50,7 @@ app.get('/api/status', async (req, res) => {
   res.json({ success: true, connected: true, credentials: ftpData.credentials });
 });
 
-app.post('/api/connect', async (req, res) => {
+app.post('/api/connect', async (req: Request, res: Response) => {
   const { host, port, user, password } = req.body;
   const client = new Client();
   client.ftp.verbose = false;
@@ -51,11 +70,11 @@ app.post('/api/connect', async (req, res) => {
 
     res.json({ success: true, message: 'Connected successfully' });
   } catch (error) {
-    res.status(401).json({ success: false, message: error.message });
+    res.status(401).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.get('/api/list', async (req, res) => {
+app.get('/api/list', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -63,7 +82,7 @@ app.get('/api/list', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Not connected' });
   }
 
-  const dirPath = req.query.path || '/';
+  const dirPath = (req.query.path as string) || '/';
 
   try {
     const list = await ftpData.client.list(dirPath);
@@ -77,11 +96,11 @@ app.get('/api/list', async (req, res) => {
 
     res.json({ success: true, files });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.get('/api/download', async (req, res) => {
+app.get('/api/download', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -89,19 +108,19 @@ app.get('/api/download', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Not connected' });
   }
 
-  const filePath = req.query.path;
+  const filePath = req.query.path as string;
 
   try {
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
     await ftpData.client.downloadTo(res, filePath);
   } catch (error) {
     if (!res.headersSent) {
-      res.status(500).json({ success: false, message: error.message });
+      res.status(500).json({ success: false, message: (error as Error).message });
     }
   }
 });
 
-app.post('/api/rename', async (req, res) => {
+app.post('/api/rename', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -115,11 +134,11 @@ app.post('/api/rename', async (req, res) => {
     await ftpData.client.rename(oldPath, newPath);
     res.json({ success: true, message: 'Renamed successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.post('/api/delete', async (req, res) => {
+app.post('/api/delete', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -137,11 +156,11 @@ app.post('/api/delete', async (req, res) => {
     }
     res.json({ success: true, message: 'Deleted successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.post('/api/move', async (req, res) => {
+app.post('/api/move', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -155,11 +174,11 @@ app.post('/api/move', async (req, res) => {
     await ftpData.client.rename(sourcePath, destPath);
     res.json({ success: true, message: 'Moved successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.get('/api/preview', async (req, res) => {
+app.get('/api/preview', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -167,13 +186,13 @@ app.get('/api/preview', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Not connected' });
   }
 
-  const filePath = req.query.path;
+  const filePath = req.query.path as string;
 
   try {
-    const chunks = [];
+    const chunks: Buffer[] = [];
     
     await ftpData.client.downloadTo({
-      write: (chunk) => {
+      write: (chunk: Buffer) => {
         chunks.push(chunk);
         return true;
       },
@@ -181,12 +200,12 @@ app.get('/api/preview', async (req, res) => {
       on: () => {},
       once: () => {},
       emit: () => {}
-    }, filePath);
+    } as any, filePath);
     
     const buffer = Buffer.concat(chunks);
     const ext = path.extname(filePath).toLowerCase();
     
-    const mimeTypes = {
+    const mimeTypes: Record<string, string> = {
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
@@ -212,12 +231,12 @@ app.get('/api/preview', async (req, res) => {
     res.setHeader('Content-Length', buffer.length);
     res.send(buffer);
   } catch (error) {
-    console.error('Preview error:', error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Preview error:', (error as Error).message);
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.get('/api/thumbnail', async (req, res) => {
+app.get('/api/thumbnail', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -225,13 +244,13 @@ app.get('/api/thumbnail', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Not connected' });
   }
 
-  const filePath = req.query.path;
+  const filePath = req.query.path as string;
 
   try {
-    const chunks = [];
+    const chunks: Buffer[] = [];
     
     await ftpData.client.downloadTo({
-      write: (chunk) => {
+      write: (chunk: Buffer) => {
         chunks.push(chunk);
         return true;
       },
@@ -239,12 +258,12 @@ app.get('/api/thumbnail', async (req, res) => {
       on: () => {},
       once: () => {},
       emit: () => {}
-    }, filePath);
+    } as any, filePath);
     
     const buffer = Buffer.concat(chunks);
     const ext = path.extname(filePath).toLowerCase();
     
-    const mimeTypes = {
+    const mimeTypes: Record<string, string> = {
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
@@ -270,12 +289,12 @@ app.get('/api/thumbnail', async (req, res) => {
     res.setHeader('Content-Length', buffer.length);
     res.send(buffer);
   } catch (error) {
-    console.error('Thumbnail error:', error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Thumbnail error:', (error as Error).message);
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.post('/api/upload', upload.single('file'), async (req, res) => {
+app.post('/api/upload', upload.single('file'), async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -292,14 +311,14 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
   try {
     const remotePath = path.posix.join(dirPath, file.originalname);
-    await ftpData.client.uploadFrom(require('stream').Readable.from(file.buffer), remotePath);
+    await ftpData.client.uploadFrom(Readable.from(file.buffer), remotePath);
     res.json({ success: true, message: 'File uploaded successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.post('/api/mkdir', async (req, res) => {
+app.post('/api/mkdir', async (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -314,11 +333,11 @@ app.post('/api/mkdir', async (req, res) => {
     await ftpData.client.ensureDir(newDirPath);
     res.json({ success: true, message: 'Directory created successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: (error as Error).message });
   }
 });
 
-app.post('/api/disconnect', (req, res) => {
+app.post('/api/disconnect', (req: Request, res: Response) => {
   const sessionId = req.sessionID;
   const ftpData = ftpClients.get(sessionId);
 
@@ -327,7 +346,7 @@ app.post('/api/disconnect', (req, res) => {
     ftpClients.delete(sessionId);
   }
 
-  req.session.destroy();
+  req.session.destroy(() => {});
   res.json({ success: true, message: 'Disconnected' });
 });
 
